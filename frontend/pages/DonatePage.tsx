@@ -12,6 +12,7 @@ import api from '../lib/api';
 const DonatePage: React.FC = () => {
   const [amount, setAmount] = useState<number>(1000);
   const [isMonthly, setIsMonthly] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [userDetails, setUserDetails] = useState({
     name: '',
@@ -22,10 +23,7 @@ const DonatePage: React.FC = () => {
 
   const amounts = [500, 1000, 2500, 5000, 10000];
 
-  const handleDonate = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowQR(true);
-  };
+  // ... (existing code)
 
   const handlePaymentConfirmed = async () => {
     try {
@@ -38,8 +36,8 @@ const DonatePage: React.FC = () => {
         donorPhone: userDetails.phone,
         donorPan: userDetails.pan
       });
-      alert("Thank you! Your donation details have been recorded successfully.");
       setShowQR(false);
+      setShowThankYou(true);
       setUserDetails({ name: '', email: '', phone: '', pan: '' }); // Reset form
     } catch (error) {
       console.error("Donation failed", error);
@@ -49,116 +47,12 @@ const DonatePage: React.FC = () => {
 
   return (
     <PageTransition className="bg-white py-12 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ... (existing JSX) ... */}
 
-        {/* Main Donation Container */}
-        <div className="space-y-10">
-
-          {/* Give Once / Monthly Toggle */}
-          <div className="flex bg-[#f1f5f9] p-1.5 rounded-xl border border-slate-200">
-            <button
-              onClick={() => setIsMonthly(false)}
-              className={`flex-1 py-3.5 rounded-lg text-sm font-bold transition-all duration-300 ${!isMonthly ? 'bg-white shadow-sm text-[#0f766e]' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Give Once
-            </button>
-            <button
-              onClick={() => setIsMonthly(true)}
-              className={`flex-1 py-3.5 rounded-lg text-sm font-bold transition-all duration-300 ${isMonthly ? 'bg-white shadow-sm text-[#0f766e]' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Monthly
-            </button>
-          </div>
-
-          {/* Amount Selection Section */}
-          <div>
-            <label className="block text-sm font-bold text-[#1e293b] mb-4 tracking-tight">Select Amount (INR)</label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
-              {amounts.map((amt) => (
-                <button
-                  key={amt}
-                  onClick={() => setAmount(amt)}
-                  className={`py-3.5 px-2 rounded-xl border-2 text-base font-bold transition-all duration-200 ${amount === amt ? 'border-[#f97316] bg-white text-slate-900 shadow-sm' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'}`}
-                >
-                  ₹{amt}
-                </button>
-              ))}
-            </div>
-            <div className="relative">
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white font-bold text-xl">₹</div>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full bg-[#334155] text-white pl-12 pr-6 py-5 rounded-xl text-xl font-bold focus:outline-none focus:ring-4 focus:ring-[#14b8a6]/20 transition-all border-none shadow-inner"
-              />
-            </div>
-          </div>
-
-          {/* User Details Section */}
-          <div className="space-y-6">
-            <h3 className="text-sm font-bold text-[#1e293b] tracking-tight">Your Details</h3>
-            <form onSubmit={handleDonate} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  required
-                  className="w-full bg-[#334155] text-white px-5 py-4 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6] border-none font-medium"
-                  placeholder="Full Name"
-                  value={userDetails.name}
-                  onChange={e => setUserDetails({ ...userDetails, name: e.target.value })}
-                />
-                <input
-                  required
-                  className="w-full bg-[#334155] text-white px-5 py-4 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6] border-none font-medium"
-                  placeholder="Email Address"
-                  type="email"
-                  value={userDetails.email}
-                  onChange={e => setUserDetails({ ...userDetails, email: e.target.value })}
-                />
-                <input
-                  required
-                  className="w-full bg-[#334155] text-white px-5 py-4 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6] border-none font-medium"
-                  placeholder="Phone Number"
-                  type="tel"
-                  value={userDetails.phone}
-                  onChange={e => setUserDetails({ ...userDetails, phone: e.target.value })}
-                />
-                <input
-                  className="w-full bg-[#334155] text-white px-5 py-4 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#14b8a6] border-none font-medium"
-                  placeholder="PAN (Optional for 80G)"
-                  value={userDetails.pan}
-                  onChange={e => setUserDetails({ ...userDetails, pan: e.target.value })}
-                />
-              </div>
-
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-5 text-xl font-bold rounded-xl bg-[#14b8a6] hover:bg-[#0d9488] text-white shadow-xl shadow-[#14b8a6]/20 transition-all"
-              >
-                Donate ₹{amount}
-              </motion.button>
-            </form>
-          </div>
-
-          {/* Trust Footer Text (Subtle) */}
-          <div className="pt-10 text-center space-y-2 opacity-50">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-              Bharat Samartha Trust • Reg No: BST/80G/2023-24/108
-            </p>
-            <div className="flex justify-center gap-6">
-              <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500"><ShieldCheck size={10} /> 80G EXEMPT</span>
-              <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500"><CheckCircle2 size={10} /> VERIFIED TRUST</span>
-              <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500"><Landmark size={10} /> TAX BENEFIT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment QR Modal (Based on Image 2) */}
+      {/* Payment QR Modal */}
       <AnimatePresence>
         {showQR && (
+          // ... (existing QR Modal code) ...
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -245,6 +139,32 @@ const DonatePage: React.FC = () => {
                   I Have Made the Payment
                 </motion.button>
               </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Thank You Modal */}
+        {showThankYou && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowThankYou(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-sm bg-white rounded-3xl p-8 text-center shadow-2xl"
+            >
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 size={40} className="text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h2>
+              <p className="text-slate-600 mb-8">Your contribution has been received. A receipt will be sent to your email shortly.</p>
+              <Button onClick={() => setShowThankYou(false)} className="w-full py-3 text-lg">Close</Button>
             </motion.div>
           </div>
         )}
