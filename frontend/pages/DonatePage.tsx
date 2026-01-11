@@ -22,8 +22,12 @@ const DonatePage: React.FC = () => {
 
   const amounts = [500, 1000, 2500, 5000, 10000];
 
-  const handleDonate = async (e: React.FormEvent) => {
+  const handleDonate = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowQR(true);
+  };
+
+  const handlePaymentConfirmed = async () => {
     try {
       await api.post('/donations', {
         amount,
@@ -34,10 +38,12 @@ const DonatePage: React.FC = () => {
         donorPhone: userDetails.phone,
         donorPan: userDetails.pan
       });
-      setShowQR(true);
+      alert("Thank you! Your donation details have been recorded successfully.");
+      setShowQR(false);
+      setUserDetails({ name: '', email: '', phone: '', pan: '' }); // Reset form
     } catch (error) {
       console.error("Donation failed", error);
-      alert("Failed to initiate donation. please try again.");
+      alert("Failed to record donation. Please try again.");
     }
   };
 
@@ -223,11 +229,21 @@ const DonatePage: React.FC = () => {
                 <p className="text-slate-400 font-medium text-sm">Scan to pay with any UPI app</p>
 
                 {/* Brand Symbols */}
-                <div className="mt-6 flex justify-center gap-4 opacity-30 grayscale">
+                <div className="mt-6 flex justify-center gap-4 opacity-30 grayscale mb-6">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo.png" alt="UPI" className="h-4 w-auto" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo.svg" alt="GPay" className="h-4 w-auto" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="h-4 w-auto" />
                 </div>
+
+                {/* Confirm Payment Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handlePaymentConfirmed}
+                  className="w-full py-4 rounded-xl bg-[#14b8a6] hover:bg-[#0d9488] text-white font-bold text-lg shadow-lg shadow-[#14b8a6]/30 transition-all"
+                >
+                  I Have Made the Payment
+                </motion.button>
               </div>
             </motion.div>
           </div>
