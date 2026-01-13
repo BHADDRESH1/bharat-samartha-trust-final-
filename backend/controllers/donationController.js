@@ -1,5 +1,12 @@
+const mongoose = require('mongoose');
 const Donation = require('../models/Donation');
 const Cause = require('../models/Cause');
+
+// In-memory array for mock mode
+let mockDonations = [];
+
+// Helper to check if DB is connected
+const isDbConnected = () => mongoose.connection.readyState === 1;
 
 // @desc    Create new donation
 // @route   POST /api/donations
@@ -8,6 +15,26 @@ const createDonation = async (req, res) => {
   const { causeId, amount, paymentMethod, isRecurring, donorName, donorEmail, donorPhone, donorPan } = req.body;
 
   try {
+    // FALLBACK: If DB not connected, use in-memory store
+    if (!isDbConnected()) {
+      const newMockDonation = {
+        _id: new mongoose.Types.ObjectId().toString(),
+        amount,
+        paymentMethod,
+        isRecurring,
+        status: 'Success',
+        guest: {
+          name: donorName,
+          email: donorEmail,
+          phone: donorPhone,
+          pan: donorPan
+        },
+        createdAt: new Date()
+      };
+      mockDonations.push(newMockDonation);
+      return res.status(201).json(newMockDonation);
+    }
+
     const donationData = {
       cause: causeId,
       amount,
@@ -78,6 +105,9 @@ const getDonations = async (req, res) => {
 // @access  Private
 const getDonationById = async (req, res) => {
   try {
+    if (!isDbConnected()) {
+      return res.status(404).json({ message: 'Donation not found (Mock Mode)' });
+    }
     const donation = await Donation.findById(req.params.id).populate('donor', 'name email').populate('cause', 'title');
     if (donation) {
       // Ensure only admin or the donor can view
@@ -98,6 +128,20 @@ const getDonationById = async (req, res) => {
 // @access  Public
 const getRecentDonations = async (req, res) => {
   try {
+    // FALLBACK: If DB not connected, return in-memory store
+    if (!isDbConnected()) {
+      const sortedMock = [...mockDonations].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+      const mappedMock = sortedMock.map(d => ({
+        _id: d._id,
+        name: d.guest ? d.guest.name : 'Donor',
+        email: d.guest ? d.guest.email : '',
+        phone: d.guest ? d.guest.phone : '',
+        amount: d.amount,
+        date: d.createdAt
+      }));
+      return res.json(mappedMock);
+    }
+
     // Fetch last 10 successful donations
     // Only select necessary fields to protect privacy if needed, though requests asked for name/email/phone
     // We will return the guest object or donor instructions
