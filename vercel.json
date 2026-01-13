@@ -23,7 +23,15 @@
       "destination": "/frontend/assets/$1"
     },
     {
-      "source": "/((?!api/|assets/|favicon.ico).*)",
+      "source": "/(.*\\.jpg)",
+      "destination": "/frontend/$1"
+    },
+    {
+      "source": "/(.*\\.png)",
+      "destination": "/frontend/$1"
+    },
+    {
+      "source": "/((?!api/|assets/|favicon.ico|.*\\.jpg|.*\\.png).*)",
       "destination": "/frontend/index.html"
     }
   ]
