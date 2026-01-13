@@ -58,9 +58,10 @@ const DonatePage: React.FC = () => {
       setShowThankYou(true);
       setUserDetails({ name: '', email: '', phone: '', pan: '' }); // Reset form
       fetchLeaderboard(); // Refresh leaderboard
-    } catch (error) {
+    } catch (error: any) {
       console.error("Donation failed", error);
-      alert("Failed to record donation. Please try again.");
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error";
+      alert(`Failed to record donation. Error: ${errorMessage}`);
     }
   };
 
@@ -110,8 +111,8 @@ const DonatePage: React.FC = () => {
                       key={amt}
                       onClick={() => setAmount(amt)}
                       className={`py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] ${amount === amt
-                          ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/30 ring-2 ring-orange-600 ring-offset-2'
-                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/30 ring-2 ring-orange-600 ring-offset-2'
+                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
                         }`}
                     >
                       ₹{amt.toLocaleString()}
