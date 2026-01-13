@@ -93,4 +93,46 @@ const getDonationById = async (req, res) => {
   }
 };
 
-module.exports = { createDonation, getMyDonations, getDonations, getDonationById };
+// @desc    Get recent donations (Public Leaderboard)
+// @route   GET /api/donations/recent
+// @access  Public
+const getRecentDonations = async (req, res) => {
+  try {
+    // Fetch last 10 successful donations
+    // Only select necessary fields to protect privacy if needed, though requests asked for name/email/phone
+    // We will return the guest object or donor instructions
+    const donations = await Donation.find({ status: 'Success' })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('donor', 'name email phone');
+
+    const leaderboard = donations.map(donation => {
+      if (donation.donor) {
+        return {
+          _id: donation._id,
+          name: donation.donor.name,
+          email: donation.donor.email,
+          phone: donation.donor.phone,
+          amount: donation.amount,
+          date: donation.createdAt
+        };
+      } else if (donation.guest) {
+        return {
+          _id: donation._id,
+          name: donation.guest.name,
+          email: donation.guest.email,
+          phone: donation.guest.phone,
+          amount: donation.amount,
+          date: donation.createdAt
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    res.json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createDonation, getMyDonations, getDonations, getDonationById, getRecentDonations };

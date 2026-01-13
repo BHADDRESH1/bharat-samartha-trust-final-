@@ -1,17 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Button } from '../components/ui/Shared';
 import { PageTransition } from '../components/ui/Motion';
-import { X, CheckCircle2, ShieldCheck, Landmark, Heart, IndianRupee } from 'lucide-react';
-
+import { X, CheckCircle2, ShieldCheck, Landmark, Heart, IndianRupee, Trophy, Users } from 'lucide-react';
 import api from '../lib/api';
+
+interface Donation {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  amount: number;
+  date: string;
+}
 
 const DonatePage: React.FC = () => {
   const [amount, setAmount] = useState<number>(1000);
   const [isMonthly, setIsMonthly] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<Donation[]>([]);
   const [userDetails, setUserDetails] = useState({
     name: '',
     email: '',
@@ -20,6 +29,19 @@ const DonatePage: React.FC = () => {
   });
 
   const amounts = [500, 1000, 2500, 5000, 10000];
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await api.get('/donations/recent');
+      setLeaderboard(response.data);
+    } catch (error) {
+      console.error("Failed to fetch leaderboard", error);
+    }
+  };
 
   const handlePaymentConfirmed = async () => {
     try {
@@ -35,6 +57,7 @@ const DonatePage: React.FC = () => {
       setShowQR(false);
       setShowThankYou(true);
       setUserDetails({ name: '', email: '', phone: '', pan: '' }); // Reset form
+      fetchLeaderboard(); // Refresh leaderboard
     } catch (error) {
       console.error("Donation failed", error);
       alert("Failed to record donation. Please try again.");
@@ -74,7 +97,7 @@ const DonatePage: React.FC = () => {
           </motion.p>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-12 gap-8 max-w-6xl mx-auto mb-16">
           {/* Donation Form Column */}
           <div className="lg:col-span-8">
             <Card className="p-8 border-none shadow-xl shadow-slate-200/50 bg-white rounded-3xl">
@@ -214,6 +237,50 @@ const DonatePage: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Leadership Board */}
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 flex items-center justify-center gap-3">
+              <Trophy className="text-yellow-500" size={32} />
+              Wall of Generosity
+            </h2>
+            <p className="text-slate-600 mt-2">Thanking our recent donors for their kindness</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {leaderboard.length > 0 ? (
+              leaderboard.map((donor) => (
+                <motion.div
+                  key={donor._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                      <Users size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">{donor.name}</h4>
+                      <p className="text-xs text-slate-500">{new Date(donor.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="block font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full text-sm">
+                      ₹{donor.amount.toLocaleString()}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-10 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                <p className="text-slate-400">Be the first to donate today!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* Payment QR Modal */}

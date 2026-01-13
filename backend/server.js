@@ -40,10 +40,16 @@ app.use('/api/forum', require('./routes/forumRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 // Error Handler
+// Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Only run listen if not in Vercel environment (Vercel exports the app)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
